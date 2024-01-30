@@ -1,0 +1,179 @@
+---
+title: "Homework 4: Differential gene expression analysis (T-test) in R"
+author: "Aizhan Uteubayeva. NetID:au198"
+date: "2023-09-27"
+output: html_document
+---
+## Step 1- Read in data into R. Check if data was imported correctly
+### 1a - Read in clinical data
+```{r}
+library(readr)
+c.clinData <- read.table(file = "CRC_PILOT_clinical_data_HIDS.tsv",
+                       sep="\t", 
+                       header = T, 
+                       stringsAsFactors = F, row.names = NULL)
+knitr::kable(head(c.clinData[,1:4],n = 6))
+```
+### 1b: Read in processed normalized gene expression data in log2 scale, includes gene annotation
+```{r}
+c.geneExp <- read.table(file = "CRC_PILOT_withGeneAnno.tsv",
+                       sep="\t", 
+                       header = T, 
+                       stringsAsFactors = F, row.names = 1)
+# transposed the gene expression data
+c.geneExp <- as.data.frame(t(c.geneExp))
+
+knitr::kable(c.geneExp[1:5, 1:4], caption = "Processed gene expression data in log2 scale with gene annotation")
+```
+### The Goal is to compare which two groups ?
+Our goal is to compare 20 patients that relapsed/recurred with 20 patients that did not relapse
+-   Question: What is the outcome variable column from clinical data file ? It is the column in the clinical file that contains the baseline and comparison values
+-   Answer: "RECURRENCE_ANY" column has values "NO" (baseline group) and "YES" (comparison group)
+```{r}
+knitr::kable(table(c.clinData$RECURRENCE_ANY))
+```
+## Step 2 - Clean/Filter data
+
+### Filter clinical data - not needed
+
+Clinical data has one row per patient. So cleaned and ready to go
+
+```{r}
+dim(c.clinData)
+head(c.clinData)
+```
+### Filter gene exp data
+
+Check rows and columns:
+
+-   Rows are features (genes in this case)
+-   Columns are patients
+```{r}
+knitr::kable(c.geneExp[1:5, 1:4]) 
+```
+### leave only the tumor samples in gene expression table = 40 samples
+```{r}
+library(dplyr) 
+c.geneExp2<- c.geneExp %>% select(-contains("Normal"))
+knitr::kable(c.geneExp2[1:5, 1:4]) 
+```
+### exract the ID for the patients from gene expression data
+```{r}
+#Check the col names of your gene expression object
+head(colnames(c.geneExp2))
+
+# Function definition - In this function I define my string split conditions based on underscore as a delimiter
+funSplit <- function(x1) {
+    
+    x2 <- unlist(strsplit(x = x1 , split = "_", fixed = TRUE))
+    x3 <- x2[2]
+    return(x3)
+}
+
+# Calling the function using apply(). I am asking the function to apply string split on every sample ID and then return the cleaned sample ids 
+newNames1 <- apply(X = as.matrix(colnames(c.geneExp2)), 
+                       MARGIN = 1,
+                       FUN =  funSplit)
+
+#new cleaned sample IDs
+head(newNames1)
+
+# You can set this as the new rownames for your gene expression object
+colnames(c.geneExp2) <- newNames1
+knitr::kable(c.geneExp2[1:5, 1:4]) 
+```
+### What are the sample identifiers ?
+
+The GSM ids are the identifiers in the gene exp data that match the identifiers for the Clinical data file:
+
+-   Sample identifier for clinical data: Column called "SUBJECT_ID"
+-   Sample identifier for gene expression data: Column names are the IDs
+
+```{r}
+matchingSamples <- which(colnames(c.geneExp2) %in% c.clinData$SUBJECT_ID) # 40 IDs matching
+subsetGeneExp <- c.geneExp2[, matchingSamples] ## 17881 rows features, 40 patient columns
+```
+## Step 3 - Identify the groups to be compared
+
+### Identify the groups to be compared (Baseline and Comparison Grps)
+
+```{r}
+# Labels (row numbers) that can identify the baseline group patients
+baselineGrpLabels <-  which(c.clinData$RECURRENCE_ANY == "NO") 
+head(baselineGrpLabels)
+
+# Use the labels (row numbers) to subset baseline patients in clinical data file = 20 patients
+c.clinBase <- c.clinData[baselineGrpLabels, ] 
+
+# Labels (row numbers) that can identify the comp group patients = 20 patients
+compGrpLabels <- which(c.clinData$RECURRENCE_ANY == "YES") 
+head(compGrpLabels)
+# Use the labels (row numbers) to subset comp patients in clinical data file 
+c.clinComp <- c.clinData[compGrpLabels, ]
+
+#### Use the clinBase and clinComp objects to subset gene expression data
+c.geneExpTumorBase <- subsetGeneExp[, c.clinBase$SUBJECT_ID] # 41927 feature (rows), 6 samples columns
+c.geneExpTumorComp <- subsetGeneExp[, c.clinComp$SUBJECT_ID] # 41927 feature (rows), 16 samples columns
+```
+## Step 4: Sanity check
+
+-   See if filtering of clinical data in R matches filtering of clinical data in excel
+-   See if sample ids in clinical data match sample ids in gene exp data (if they don't match it means your step 1 and/or 2 is wrong)
+-   Verify you see correct number of samples in baseline and comp groups
+-   Export the column names from gene expression data to see if it contains only probe/gene names and no other garbage
+
+```{r}
+#Looking if sample ids in clinical data match sample ids in gene exp data
+c.clinBase$SUBJECT_ID == colnames(c.geneExpTumorBase)
+c.clinComp$SUBJECT_ID == colnames(c.geneExpTumorComp)
+
+### Checking if the samples IDs baseline and comp groups are the same 
+write.table(c.clinBase$SUBJECT_ID, file = "output/CRC ClinBaseIDs.tsv", sep="\t", quote = F  )
+write.table(c.clinComp$SUBJECT_ID , file = "output/CRC ClinCompIDs.tsv", sep="\t", quote = F  )
+write.table(colnames(c.geneExpTumorBase) , 
+            file = "output/CRC GeneExpBaseIDs.tsv", 
+            sep="\t", quote = F  )
+write.table(colnames(c.geneExpTumorComp) , 
+            file = "output/GeneExpCompIDs.tsv", 
+            sep="\t", quote = F  )
+
+#Exported the features from gene expression data  
+#Opened this file and check that it contains only probe/gene names and no other garbage
+write.table(rownames(c.geneExp),file = "output/CRCgenExpFeatureIDsCheck.tsv", sep="\t", quote = F  )
+```
+## Step 5: Prep data for T-test
+```{r}
+### Checking to make sure data is a numeric data frame
+knitr::kable(head(c.geneExpTumorBase[1:5,1:4]))
+knitr::kable(head(c.geneExpTumorComp[1:5,1:4]))
+```
+#### Function for T-test
+```{r ttest}
+source("fnTTest.R")
+
+#### Call T-test function
+results1 = fnTTest(baseGroup = c.geneExpTumorBase, 
+                   compGroup = c.geneExpTumorComp, 
+                   testName = "CRC_TTest_", 
+                   baseGroupName = "Non-relapsed",
+                   compGroupName =  "Relapsed",
+                   folderName = "output")
+```
+## Brushing up
+### creating two csv finles with ordered p-value>0.01 and top 20 genes
+```{r}
+c.ttest <- read.csv(file = "CRC_TTest.csv")
+p = c.ttest[c.ttest$Pvalue < 0.01, ] # 146 genes that have p-value lower than 0.01
+p.extracted <- data.frame(c(p$Feature), c(p$Pvalue)) # extracted features and p-value
+p_final <- p.extracted[order(p.extracted$c.p.Pvalue.),] # ordered by ascending value of p
+colnames(p_final) <- c("Features","p-value") # changed the name of the columns
+
+# saving the df into csv file
+write_csv(p_final,"/Users/utb_aizhan/Desktop/R projects/HIDS7003_Precision_Health/GroupComp_Rproj/GroupComp/p_final.csv" )
+
+# selecting only 20 top genes
+final_features <- head(p_final,20)
+write_csv(final_features,"/Users/utb_aizhan/Desktop/R projects/HIDS7003_Precision_Health/GroupComp_Rproj/GroupComp/final_features.csv" )
+```
+
+
