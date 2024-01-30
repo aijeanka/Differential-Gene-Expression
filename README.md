@@ -1,1 +1,8 @@
-# Differential-Gene-Expression
+# Differential Gene Expression
+## Analysis Logic
+
+In this project, the dataset comprises clinical data from 40 patients, ensuring confirmed de-identification. The clinical data involves various attributes for each patient, with 40 rows corresponding to individual patients. The primary focus is to compare two specific groups: 20 patients who experienced a relapse and another 20 patients exhibiting recurrence of colorectal cancer. The key target attribute for this analysis is the "RECURRENCE_ANY" column in the clinical data. To streamline the comparison, a subset of the clinical data needs to be created, consisting of only 20 patients, with unique patient IDs.
+
+Simultaneously, the gene expression data, initially presented in a log2 scale, requires attention. The dataset, which initially has 80 rows representing different genes, needs to be transposed. After this transformation, the dataset will have 80 columns, each corresponding to a patient. However, a misalignment exists between the patient IDs in the clinical data and the gene expression file, posing a challenge. The gene expression file will be instrumental in pinpointing the patients of interest within the clinical data.
+
+As part of a sanity check, it is crucial to ensure that the datasets match seamlessly, forming a numeric matrix. Additionally, any extraneous rows or irrelevant data ("junk") must be identified and removed to guarantee the integrity and coherence of the dataset. The successful execution of these steps will pave the way for a comprehensive and accurate comparative analysis of the patients experiencing relapse versus those with colorectal cancer recurrence.
