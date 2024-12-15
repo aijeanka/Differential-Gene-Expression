@@ -1,8 +1,76 @@
-# Differential Gene Expression
-## Analysis Logic
+# **Colorectal Cancer Relapse and Recurrence Analysis**
 
-In this project, the dataset comprises clinical data from 40 patients, ensuring confirmed de-identification. The clinical data involves various attributes for each patient, with 40 rows corresponding to individual patients. The primary focus is to compare two specific groups: 20 patients who experienced a relapse and another 20 patients exhibiting recurrence of colorectal cancer. The key target attribute for this analysis is the "RECURRENCE_ANY" column in the clinical data. To streamline the comparison, a subset of the clinical data needs to be created, consisting of only 20 patients, with unique patient IDs.
+## **Project Overview**
 
-Simultaneously, the gene expression data, initially presented in a log2 scale, requires attention. The dataset, which initially has 80 rows representing different genes, needs to be transposed. After this transformation, the dataset will have 80 columns, each corresponding to a patient. However, a misalignment exists between the patient IDs in the clinical data and the gene expression file, posing a challenge. The gene expression file will be instrumental in pinpointing the patients of interest within the clinical data.
+This repository contains the results and documentation of a bioinformatics project aimed at identifying differentially expressed genes (DEGs) in patients experiencing relapse and recurrence of colorectal cancer. The analysis compares clinical data and gene expression data to uncover insights into the molecular mechanisms distinguishing these patient groups.
 
-As part of a sanity check, it is crucial to ensure that the datasets match seamlessly, forming a numeric matrix. Additionally, any extraneous rows or irrelevant data ("junk") must be identified and removed to guarantee the integrity and coherence of the dataset. The successful execution of these steps will pave the way for a comprehensive and accurate comparative analysis of the patients experiencing relapse versus those with colorectal cancer recurrence.
+## **Project Objectives**
+
+- Identify DEGs between patients with relapse and those with recurrence of colorectal cancer.
+- Ensure alignment between clinical and gene expression data.
+- Perform data cleaning and transformation to create a coherent dataset for analysis.
+
+## **Methodology**
+
+### **1. Clinical Data Subsetting**
+
+- **Objective**: Create a subset of clinical data with 20 unique patient IDs for each group (relapse and recurrence).
+- **Key Attribute**: `RECURRENCE_ANY` column.
+
+### **2. Gene Expression Data Transformation**
+
+- **Objective**: Transpose gene expression data from log2 scale to align with clinical data.
+- **Initial State**: 80 rows representing different genes.
+- **Post-Transformation**: 80 columns corresponding to patients.
+
+### **3. Data Alignment and Sanity Check**
+
+- Ensure alignment between patient IDs in the clinical data and gene expression data.
+- Identify and remove extraneous rows or "junk" data to ensure dataset integrity.
+
+### **4. Differential Gene Expression Analysis**
+
+Performed differential gene expression analysis to identify top DEGs distinguishing the two patient groups.
+
+**Key Outputs**:
+
+- **Top 20 Genes (DEGs)**:  
+  - `Aizhan-Uteubayeva-TTestHW-05-Top20Genes.tsv`
+
+- **Code for Analysis**:  
+  - R Markdown: `Aizhan-Uteubayeva-TTestHW-02-a-Code.Rmd`  
+  - HTML Report: `Aizhan-Uteubayeva-TTestHW-02-b-Code.html`
+
+- **Output Data**:  
+  - Processed Results: `Aizhan-Uteubayeva-TTestHW-04-Output.csv`
+
+## **Repository Structure**
+
+```
+├── data/
+│   └── Aizhan-Uteubayeva-TTestHW-05-Top20Genes.tsv
+│
+├── analysis/
+│   ├── Aizhan-Uteubayeva-TTestHW-02-a-Code.Rmd
+│   └── Aizhan-Uteubayeva-TTestHW-02-b-Code.html
+│
+├── results/
+│   └── Aizhan-Uteubayeva-TTestHW-04-Output.csv
+│
+└── README.md
+```
+
+## **Skills Demonstrated**
+
+- **Bioinformatics Analysis**: Differential gene expression analysis.
+- **Data Cleaning and Transformation**: Ensuring alignment of clinical and gene expression data.
+- **Reproducible Research**: Use of R Markdown for documenting analysis workflows.
+- **Data Visualization**: Generating HTML reports and summarizing results.
+
+## **Author**
+
+**Aizhan Uteubayeva**
+
+## **License**
+
+This project is licensed under the MIT License.
